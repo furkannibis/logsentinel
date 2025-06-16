@@ -41,6 +41,9 @@ class Logsentinel():
                 # Problem şurada her sistem kendi nebi şahsına münasır log sistemi var bu işin bir standart'ı yok mu acaba?
                 with open(self.ubuntu_system_log_files[-6], "r", buffering=self.BUFFERING) as file:
                     print(file.read())
+
+                # TO DO
+                # Her log dosyasının bir standart'ı var mı onu öğrenmek
                 
     
     def __str__(self):
