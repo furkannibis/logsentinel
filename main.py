@@ -1,12 +1,13 @@
 #! /usr/bin/python3.12
 
 from platform import uname, freedesktop_os_release
-import io
+from os import popen, system
 
 class Logsentinel():
     def __init__(self):
         self.uname = uname()
         self.os = self.uname.system
+        self.BUFFERING = 1000
 
         self.select_distro()
         
@@ -20,28 +21,27 @@ class Logsentinel():
     
     def get_log_files(self):
         """
-            Ubuntu 24.04
+            Ubuntu 24.04 sistemleri için gerekli olan fonksiyon
+            Direkt olarak sistem içerisindeki log dosyalarını alıyor.
         """
         if self.distro == "ubuntu":
             if self.distro_version == "24.04":
-                self.UBUNTU_AUTH_LOG = "/var/log/auth.log"
-                self.UBUNTU_DAEMON_LOG = "/var/log/daemon.log"
-                self.UBUNTU_DEBUG_LOG = "/var/log/debug"
-                self.UBUNTU_KERNEL_LOG = "/var/log/kern.log"
-                self.UBUNTU_SYSTEM_LOG = "/var/log/syslog"
+                self.LOG_PATH = "/var/log/"
 
-                self.ubuntu_log_files()
+                # INFO
+                # log klasörü altındaki tüm log dosyalarını almak dosyaları alıyoruz.
+                # Sembolik linkleri almadan sadece dosyaları
+                # Şimdilik plan full path'ı alıp ls ile dosya özelliklerine bakmak? Sebebi yok ama
+                self.LS_AL_FILE_COMMAND = "sudo find /var/log -type f -name \"*\" | grep -E '\\.log(\\.[0-9]+)?$' | awk '{$1=$1; print}'"
 
-    def ubuntu_log_files(self):
-        with open(self.UBUNTU_AUTH_LOG, 'r', encoding="UTF-8", errors="ignore") as auth_log:
-            self.auth_log = [auth_log.strip() for auth_log in auth_log.readlines()]
-        
-        with open(self.UBUNTU_DAEMON_LOG, 'r', encoding="UTF-8", errors="ignore") as daemon_log:
-            self.daemon_log = [daemon.strip() for daemon in daemon_log.readlines()]
-
-        with open(self.UBUNTU_SYSTEM_LOG, 'r', encoding="UTF-8", errors="ignore") as sys_log:
-            self.sys_log = [sys_log.strip() for sys_log in sys_log.readlines()]
-            
+                system(self.LS_AL_FILE_COMMAND)
+                self.ubuntu_system_log_files = popen(self.LS_AL_FILE_COMMAND).read().strip().split()
+                
+                # PROBLEM
+                # Problem şurada her sistem kendi nebi şahsına münasır log sistemi var bu işin bir standart'ı yok mu acaba?
+                with open(self.ubuntu_system_log_files[-6], "r", buffering=self.BUFFERING) as file:
+                    print(file.read())
+                
     
     def __str__(self):
         return f"{self.os} {self.distro} {self.distro_version}"
